@@ -1,0 +1,37 @@
+// use prisma-next
+enum Role {
+  // @@type("pg/text@1")
+  // Admin = "ADMIN"
+  // User = "USER"
+  ADMIN
+  USER
+}
+
+namespace public {
+  model User {
+    userId       String               @id(map: "users_pkey") @map("id") @default(cuid(2))
+    email        String               @unique
+    password     String?
+    role         Role                 @default(USER)
+    createdAt    temporal.createdAt() @map("created_at")
+    updatedAt    temporal.updatedAt() @map("updated_at")
+    userSessions UserSession[]
+
+    @@index([email], map: "users_email_idx")
+    @@map("users")
+  }
+
+  model UserSession {
+    sessionId String               @id(map: "user_sessions_pkey") @map("id") @default(cuid(2))
+    userId    String               @map("user_id")
+    jti       Uuid                 @unique
+    device    String?
+    createdAt temporal.createdAt() @map("created_at")
+    expiresAt Timestamptz(0)       @map("expires_at")
+    user      User                 @relation(fields:[userId], references:[userId], onDelete: Cascade, onUpdate: Cascade, map: "user_sessions_user_id_fkey")
+
+    @@index([jti], map: "user_sessions_jti_idx")
+    @@index([userId], map: "user_sessions_user_id_idx")
+    @@map("user_sessions")
+  }
+}

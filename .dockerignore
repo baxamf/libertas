@@ -1,0 +1,66 @@
+# --- Version Control ---
+**/.git
+**/.gitignore
+**/.gitattributes
+
+# --- Docker Files ---
+# Ignore your docker configuration files to prevent cache busting
+**/docker-compose.yml
+**/docker-compose*.yml
+**/.dockerignore
+**/Dockerfile
+**/Dockerfile*
+
+# --- Environment Variables and Secrets ---
+**/*.pem
+**/*.key
+**/id_rsa
+**/secrets/
+**/.env
+**/.env*
+
+# --- Local Dependencies ---
+# These should be installed inside the container via your Dockerfile
+**/env/
+**/node_modules
+
+# --- TypeScript Build Info ---
+**/*.tsbuildinfo
+**/next-env.d.ts
+
+# --- Turbo Repo Cache ---
+**/.turbo
+
+# --- Build Artifacts and Output Directories ---
+**/dist
+**/build
+**/out
+**/target
+**/.next
+**/.nuxt
+
+# --- Testing and Code Quality ---
+**/coverage/
+**/.eslintcache
+**/*.lcov
+**/test
+**/vitest*
+
+# --- OS and IDE Metadata ---
+**/.DS_Store
+**/Thumbs.db
+**/.idea/
+**/.vscode/
+**/*.suo
+**/*.ntvs*
+**/*.njsproj
+
+# --- Markdown Files and Agents ---
+**/*.md
+.agents
+
+# --- Logs and Temporary Files ---
+**/*.log
+**/.pnpm-debug.log*
+**/tmp/
+**/temp/

@@ -1,0 +1,22 @@
+{
+  "name": "libertas",
+  "version": "0.0.1",
+  "description": "Monorepo Turborepo starter with NestJS 12, Next.js 16, Prisma 8, PostgreSQL",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.4",
+    "turbo": "^2.11.2",
+    "typescript": "6.0.3"
+  },
+  "packageManager": "pnpm@12.5.1",
+  "engines": {
+    "node": ">=22"
+  }
+}

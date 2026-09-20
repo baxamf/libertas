@@ -1,0 +1,47 @@
+{
+  "$schema": "https://v2-11-2.turborepo.dev/schema.json",
+  "ui": "tui",
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "API_URL",
+    "JWT_ACCESS_COOKIE_NAME",
+    "JWT_REFRESH_COOKIE_NAME",
+    "JWT_SECRET",
+    "JWT_REFRESH_SECRET"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "^contract:emit"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types", "^contract:emit"]
+    },
+    "test:e2e": {
+      "dependsOn": ["^build", "^contract:emit"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["coverage/e2e/**"]
+    },
+    "dev": {
+      "dependsOn": ["^build", "^contract:emit"],
+      "cache": false,
+      "persistent": true
+    },
+    "contract:emit": {
+      "inputs": ["src/prisma/contract.prisma", "prisma.config.ts"],
+      "outputs": ["src/prisma/contract.json", "src/prisma/contract.d.ts"]
+    },
+    "migration:plan": {
+      "dependsOn": ["contract:emit"],
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    }
+  }
+}

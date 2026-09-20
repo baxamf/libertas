@@ -1,0 +1,40 @@
+{
+  "name": "@repo/db",
+  "version": "0.0.1",
+  "description": "Prisma 8 database PostgreSQL package",
+  "private": true,
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "contract:emit": "prisma contract emit",
+    "migration:plan": "prisma migration plan",
+    "migration:status": "prisma migration status",
+    "db:verify": "prisma db verify",
+    "db:migrate": "prisma db migrate --advance-ref db",
+    "db:seed": "tsx src/seed.ts",
+    "check-types": "tsc --noEmit"
+  },
+  "keywords": [],
+  "dependencies": {
+    "@prisma/orm-postgres": "^8.0.0-rc.11",
+    "dotenv": "^17.4.2",
+    "temporal-polyfill": "^1.0.5"
+  },
+  "devDependencies": {
+    "@prisma/cli": "^8.0.0-rc.15",
+    "argon2": "^0.45.1",
+    "prisma": "^8.0.0-rc.15",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/src/index.js",
+      "default": "./dist/src/index.js"
+    }
+  }
+}

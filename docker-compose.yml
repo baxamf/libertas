@@ -1,0 +1,89 @@
+services:
+  backend:
+    container_name: liberta_backend
+    build:
+      context: .
+      dockerfile: ./apps/backend/Dockerfile
+      args:
+        - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?connection_limit=1&pgbouncer=true
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?connection_limit=1&pgbouncer=true
+    depends_on:
+      db:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    networks:
+      - liberta_network
+
+  web:
+    container_name: liberta_web
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+      args:
+        - API_URL=http://backend:5000
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./apps/web/.env
+    environment:
+      API_URL: http://backend:5000
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - liberta_network
+
+  db:
+    image: postgres:18-alpine
+    container_name: liberta_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - liberta_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db-migrate:
+    container_name: liberta_db_migrations
+    build:
+      context: .
+      dockerfile: ./packages/db/Dockerfile
+    command:
+      [
+        "sh",
+        "-c",
+        "pnpm turbo db:migrate && pnpm --filter=@repo/db migration:status && pnpm --filter=@repo/db db:verify && pnpm --filter=@repo/db db:seed",
+      ]
+    env_file:
+      - ./packages/db/.env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?connection_limit=1&pgbouncer=true
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - liberta_network
+
+volumes:
+  postgres_data:
+
+networks:
+  liberta_network:
+    driver: bridge

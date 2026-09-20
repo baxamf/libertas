@@ -1,0 +1,340 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.user_sessions",
+    "label": "Create table \"user_sessions\"",
+    "summary": "Creates table \"user_sessions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"user_sessions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_sessions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"user_sessions\"",
+        "sql": "CREATE TABLE \"public\".\"user_sessions\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"device\" text,\n  \"expires_at\" timestamptz(0) NOT NULL,\n  \"id\" text NOT NULL,\n  \"jti\" uuid NOT NULL,\n  \"user_id\" text NOT NULL,\n  CONSTRAINT \"user_sessions_pkey\" PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"user_sessions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_sessions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.users",
+    "label": "Create table \"users\"",
+    "summary": "Creates table \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"users\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"users\"",
+        "sql": "CREATE TABLE \"public\".\"users\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"password\" text,\n  \"role\" text DEFAULT 'USER' NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  CONSTRAINT \"users_pkey\" PRIMARY KEY (\"id\"),\n  CONSTRAINT \"users_role_check_5b1978b5\" CHECK (\"role\" IN ('ADMIN', 'USER'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"users\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.user_sessions.user_sessions_jti_key",
+    "label": "Add unique constraint on \"user_sessions\" (jti)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "user_sessions_jti_key",
+        "table": "user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_sessions_jti_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_sessions_jti_key",
+          "public",
+          "\"public\".\"user_sessions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"user_sessions_jti_key\"",
+        "sql": "ALTER TABLE \"public\".\"user_sessions\" ADD CONSTRAINT \"user_sessions_jti_key\" UNIQUE (\"jti\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_sessions_jti_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_sessions_jti_key",
+          "public",
+          "\"public\".\"user_sessions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.users.users_email_key",
+    "label": "Add unique constraint on \"users\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "users_email_key",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"users_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_email_key",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"users_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD CONSTRAINT \"users_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"users_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_email_key",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.user_sessions.user_sessions_jti_idx",
+    "label": "Create index \"user_sessions_jti_idx\" on \"user_sessions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "user_sessions_jti_idx",
+        "table": "user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"user_sessions_jti_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_sessions_jti_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"user_sessions_jti_idx\"",
+        "sql": "CREATE INDEX \"user_sessions_jti_idx\" ON \"public\".\"user_sessions\" (\"jti\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"user_sessions_jti_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_sessions_jti_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.user_sessions.user_sessions_user_id_idx",
+    "label": "Create index \"user_sessions_user_id_idx\" on \"user_sessions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "user_sessions_user_id_idx",
+        "table": "user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"user_sessions_user_id_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_sessions_user_id_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"user_sessions_user_id_idx\"",
+        "sql": "CREATE INDEX \"user_sessions_user_id_idx\" ON \"public\".\"user_sessions\" (\"user_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"user_sessions_user_id_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_sessions_user_id_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.users.users_email_idx",
+    "label": "Create index \"users_email_idx\" on \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "users_email_idx",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"users_email_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users_email_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"users_email_idx\"",
+        "sql": "CREATE INDEX \"users_email_idx\" ON \"public\".\"users\" (\"email\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"users_email_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users_email_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.user_sessions.user_sessions_user_id_fkey",
+    "label": "Add foreign key \"user_sessions_user_id_fkey\" on \"user_sessions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "user_sessions_user_id_fkey",
+        "table": "user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"user_sessions_user_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_sessions_user_id_fkey",
+          "public",
+          "\"public\".\"user_sessions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"user_sessions_user_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"user_sessions\"\nADD CONSTRAINT \"user_sessions_user_id_fkey\"\nFOREIGN KEY (\"user_id\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"user_sessions_user_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_sessions_user_id_fkey",
+          "public",
+          "\"public\".\"user_sessions\""
+        ]
+      }
+    ]
+  }
+]
